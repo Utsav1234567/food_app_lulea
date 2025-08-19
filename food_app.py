@@ -14,6 +14,13 @@ from email.mime.text import MIMEText
 
 st.title("🍲 Luleå Home Kitchen – Weekly Orders")
 
+
+project_folder = r"C:\Users\utsadh\OneDrive - Luleå University of Technology\Desktop\our business"
+
+
+
+
+
 # Menu (static for now)
 menu = {
     "Chicken Momo": {"price": 95, "allergens": "Wheat, Soy"},
