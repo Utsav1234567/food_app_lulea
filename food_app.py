@@ -14,8 +14,10 @@ from email.mime.text import MIMEText
 
 st.title("🍲 Luleå Home Kitchen – Weekly Orders")
 
-project_folder = r"C:\Users\utsadh\OneDrive - Luleå University of Technology\Desktop\our business"
-orders_path = os.path.join(project_folder, "orders.csv")
+# Use a folder for all data dynamically
+# Save directly in the repo root
+orders_path = "orders.csv"
+
 
 # Menu (static for now)
 menu = {
@@ -29,13 +31,13 @@ st.header("This Week’s Menu")
 for dish, details in menu.items():
     st.write(f"**{dish}** – {details['price']} SEK  \n_Allergens: {details['allergens']}_")
 
-# Option to choose Admin or Customer
+# Mode selection
 mode = st.radio("Select Mode", ["Customer", "Admin"])
 
-# Function to send email
+# Email function
 def send_email(order_details):
     sender_email = "utsav.adhikari1234@gmail.com"
-    sender_password = "vonw tduk mdbp jacm"  # use Gmail App Password
+    sender_password = "vonw tduk mdbp jacm"  # Gmail App Password
     receiver_email = "utsav.adhikari1234@gmail.com"
 
     subject = "New Luleå Home Kitchen Order"
@@ -76,11 +78,12 @@ if mode == "Customer":
             "Comments": comments
         }
 
-        # Save to CSV
+        # Save to CSV safely
+        df_new = pd.DataFrame([new_order])
         if not os.path.exists(orders_path):
-            pd.DataFrame([new_order]).to_csv(orders_path, index=False)
+            df_new.to_csv(orders_path, index=False)
         else:
-            pd.DataFrame([new_order]).to_csv(orders_path, mode="a", header=False, index=False)
+            df_new.to_csv(orders_path, mode="a", header=False, index=False)
 
         st.success("✅ Order submitted! Please pay via Swish.")
 
@@ -93,15 +96,15 @@ elif mode == "Admin":
     st.header("Admin Panel – View Orders")
     password = st.text_input("Enter admin password", type="password")
 
-    if password == "luleadmin123":  # set your own secure password
-        # Start New Project
+    if password == "luleadmin123":  # admin password
+        # Project Management
         st.subheader("Project Management")
         if st.button("🆕 Start New Project"):
             confirm = st.checkbox("⚠️ Confirm: I want to delete all previous orders and start fresh")
             if confirm:
                 if os.path.exists(orders_path):
                     os.remove(orders_path)
-                excel_file = os.path.join(project_folder, "all_orders.xlsx")
+                excel_file = "all_orders.xlsx"
                 if os.path.exists(excel_file):
                     os.remove(excel_file)
                 pd.DataFrame(columns=["Timestamp", "Name", "Phone", "Dish", "Quantity", "Pickup/Delivery", "Comments"]).to_csv(orders_path, index=False)
@@ -117,7 +120,7 @@ elif mode == "Admin":
 
             # Export button
             if st.button("Export All Orders to Excel"):
-                excel_file = os.path.join(project_folder, "all_orders.xlsx")
+                excel_file = "all_orders.xlsx"
                 df.to_excel(excel_file, index=False)
                 st.success(f"✅ Orders exported to {excel_file} in the project folder!")
         else:
