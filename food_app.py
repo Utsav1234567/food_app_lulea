@@ -118,11 +118,22 @@ elif mode == "Admin":
             st.write("### All Orders")
             st.dataframe(df)
 
-            # Export button
-            if st.button("Export All Orders to Excel"):
-                excel_file = "all_orders.xlsx"
-                df.to_excel(excel_file, index=False)
-                st.success(f"✅ Orders exported to {excel_file} in the project folder!")
+            
+
+
+            import io
+
+            if st.button("📥 Export Orders to Excel"):
+                towrite = io.BytesIO()
+                df.to_excel(towrite, index=False, engine="xlsxwriter")
+                towrite.seek(0)
+                st.download_button(
+                    label="⬇️ Download Excel file",
+                    data=towrite,
+                    file_name="all_orders.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
         else:
             st.info("No orders yet.")
     else:
