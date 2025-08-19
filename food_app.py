@@ -23,8 +23,7 @@ orders_path = os.path.join(project_folder, "orders.csv")
 
 # Menu (static for now)
 menu = {
-    "Chicken Momo": {"price": 95, "allergens": "Wheat, Soy"},
-    "Veg Dal-Bhat": {"price": 90, "allergens": "None (may contain traces of nuts)"},
+    
     "Achar": {"price": 35, "allergens": "Mustard"},
     "Kheer (Rice Pudding)": {"price": 40, "allergens": "Milk"}
 }
