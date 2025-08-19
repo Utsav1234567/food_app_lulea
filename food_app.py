@@ -92,45 +92,48 @@ if mode == "Customer":
         order_text = "\n".join([f"{k}: {v}" for k, v in new_order.items()])
         send_email(order_text)
 
+
 # Admin Mode
 elif mode == "Admin":
     st.header("Admin Panel – View Orders")
     password = st.text_input("Enter admin password", type="password")
 
     if password == "luleadmin123":  # admin password
+        
+        # Initialize session state for orders
+        if "orders" not in st.session_state:
+            if os.path.exists(orders_path):
+                st.session_state.orders = pd.read_csv(orders_path)
+            else:
+                st.session_state.orders = pd.DataFrame(columns=["Timestamp", "Name", "Phone", "Dish", "Quantity", "Pickup/Delivery", "Comments"])
+
         # Project Management
         st.subheader("Project Management")
         if st.button("🆕 Start New Project"):
             confirm = st.checkbox("⚠️ Confirm: I want to delete all previous orders and start fresh")
             if confirm:
-                # Reset orders in memory
-                df = pd.DataFrame(columns=["Timestamp", "Name", "Phone", "Dish", "Quantity", "Pickup/Delivery", "Comments"])
-                
-                # Clear CSV so customers start fresh
-                df.to_csv(orders_path, index=False)
-                
+                st.session_state.orders = pd.DataFrame(columns=["Timestamp", "Name", "Phone", "Dish", "Quantity", "Pickup/Delivery", "Comments"])
                 st.success("✅ New project initialized. All previous orders cleared.")
             else:
                 st.info("Check the box above to confirm deletion.")
 
         # Display Orders
-        if os.path.exists(orders_path):
-            df = pd.read_csv(orders_path)
+        if not st.session_state.orders.empty:
             st.write("### All Orders")
-            st.dataframe(df)
+            st.dataframe(st.session_state.orders)
 
             # Export button (downloadable)
-            if st.button("📥 Export Orders to Excel"):
-                towrite = io.BytesIO()
-                df.to_excel(towrite, index=False, engine="openpyxl")
-                towrite.seek(0)
-                st.download_button(
-                    label="⬇️ Download Excel file",
-                    data=towrite,
-                    file_name="all_orders.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+            buffer = io.BytesIO()
+            st.session_state.orders.to_excel(buffer, index=False, engine="openpyxl")
+            buffer.seek(0)
+            st.download_button(
+                label="📥 Download Orders to Excel",
+                data=buffer,
+                file_name="all_orders.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
         else:
             st.info("No orders yet.")
     else:
         st.warning("❌ Incorrect password")
+
