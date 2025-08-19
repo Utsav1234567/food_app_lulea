@@ -11,13 +11,15 @@ from datetime import datetime
 import os
 import smtplib
 from email.mime.text import MIMEText
+import io  # for Excel download
 
 st.title("🍲 Luleå Home Kitchen – Weekly Orders")
 
 # Use a folder for all data dynamically
-# Save directly in the repo root
-orders_path = "orders.csv"
+project_folder = os.path.join(os.getcwd(), "data")
+os.makedirs(project_folder, exist_ok=True)  # ensure the folder exists
 
+orders_path = os.path.join(project_folder, "orders.csv")
 
 # Menu (static for now)
 menu = {
@@ -102,12 +104,12 @@ elif mode == "Admin":
         if st.button("🆕 Start New Project"):
             confirm = st.checkbox("⚠️ Confirm: I want to delete all previous orders and start fresh")
             if confirm:
-                if os.path.exists(orders_path):
-                    os.remove(orders_path)
-                excel_file = "all_orders.xlsx"
-                if os.path.exists(excel_file):
-                    os.remove(excel_file)
-                pd.DataFrame(columns=["Timestamp", "Name", "Phone", "Dish", "Quantity", "Pickup/Delivery", "Comments"]).to_csv(orders_path, index=False)
+                # Reset orders in memory
+                df = pd.DataFrame(columns=["Timestamp", "Name", "Phone", "Dish", "Quantity", "Pickup/Delivery", "Comments"])
+                
+                # Clear CSV so customers start fresh
+                df.to_csv(orders_path, index=False)
+                
                 st.success("✅ New project initialized. All previous orders cleared.")
             else:
                 st.info("Check the box above to confirm deletion.")
@@ -118,14 +120,10 @@ elif mode == "Admin":
             st.write("### All Orders")
             st.dataframe(df)
 
-            
-
-
-            import io
-
+            # Export button (downloadable)
             if st.button("📥 Export Orders to Excel"):
                 towrite = io.BytesIO()
-                df.to_excel(towrite, index=False, engine="xlsxwriter")
+                df.to_excel(towrite, index=False, engine="openpyxl")
                 towrite.seek(0)
                 st.download_button(
                     label="⬇️ Download Excel file",
@@ -133,7 +131,6 @@ elif mode == "Admin":
                     file_name="all_orders.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-
         else:
             st.info("No orders yet.")
     else:
